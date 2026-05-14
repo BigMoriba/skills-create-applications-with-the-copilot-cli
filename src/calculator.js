@@ -63,6 +63,24 @@ function toNumberOrError(val, name) {
   return n;
 }
 
+function modulo(a, b) {
+  // Returns the remainder of a divided by b
+  return a % b;
+}
+
+function power(base, exponent) {
+  // Returns base raised to the exponent
+  return Math.pow(base, exponent);
+}
+
+function squareRoot(n) {
+  // Returns the square root of n, errors on negative numbers
+  if (n < 0) {
+    throw new Error('Square root of negative number');
+  }
+  return Math.sqrt(n);
+}
+
 function compute(op, a, b) {
   switch (op) {
     case 'add':
@@ -76,6 +94,15 @@ function compute(op, a, b) {
         throw new Error('Division by zero');
       }
       return a / b;
+    case 'mod':
+      if (b === 0) {
+        throw new Error('Modulo by zero');
+      }
+      return modulo(a, b);
+    case 'pow':
+      return power(a, b);
+    case 'sqrt':
+      return squareRoot(a);
     default:
       throw new Error(`Unsupported operation: ${op}`);
   }
@@ -112,21 +139,32 @@ function main() {
     errorExit('No operation specified. Use --help for usage.');
   }
 
-  if (aRaw === undefined || bRaw === undefined) {
-    errorExit('Two operands are required. Example: node src/calculator.js add 2 3');
+  // Allow sqrt to accept a single operand
+  if (op === 'sqrt') {
+    if (aRaw === undefined) {
+      errorExit('One operand is required for sqrt. Example: node src/calculator.js sqrt 16');
+    }
+  } else {
+    if (aRaw === undefined || bRaw === undefined) {
+      errorExit('Two operands are required. Example: node src/calculator.js add 2 3');
+    }
   }
 
   try {
     let a = toNumberOrError(aRaw, 'a');
-    let b = toNumberOrError(bRaw, 'b');
+    // For sqrt, b may be undefined and is ignored
+    let b = bRaw !== undefined ? toNumberOrError(bRaw, 'b') : undefined;
 
-    const validOps = ['add', 'subtract', 'multiply', 'divide'];
+    const validOps = ['add', 'subtract', 'multiply', 'divide', 'mod', 'pow', 'sqrt'];
     if (!validOps.includes(op)) {
       // allow short symbols as convenience
       if (op === '+') op = 'add';
       else if (op === '-') op = 'subtract';
       else if (op === '*' || op === 'x' || op === 'X') op = 'multiply';
       else if (op === '/' || op === '÷') op = 'divide';
+      else if (op === '%') op = 'mod';
+      else if (op === '^') op = 'pow';
+      else if (op === '√' || op.toLowerCase() === 'sqrt') op = 'sqrt';
     }
 
     const result = compute(op, a, b);
@@ -137,12 +175,18 @@ function main() {
     if (err && err.message && err.message.toLowerCase().includes('division by zero')) {
       errorExit('Error: Division by zero', 2);
     }
+    if (err && err.message && err.message.toLowerCase().includes('modulo by zero')) {
+      errorExit('Error: Modulo by zero', 2);
+    }
+    if (err && err.message && err.message.toLowerCase().includes('square root of negative')) {
+      errorExit('Error: Square root of negative number', 2);
+    }
     errorExit(err.message || String(err), 1);
   }
 }
 
 // Export functions for unit testing
-module.exports = { compute, toNumberOrError };
+module.exports = { compute, toNumberOrError, modulo, power, squareRoot };
 
 // Only run main when executed directly
 if (require.main === module) {

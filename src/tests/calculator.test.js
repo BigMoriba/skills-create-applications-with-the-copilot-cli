@@ -21,8 +21,32 @@ describe('Calculator basic operations', () => {
     expect(() => compute('divide', 1, 0)).toThrow('Division by zero');
   });
 
-  test('unsupported operation throws', () => {
-    expect(() => compute('mod', 5, 2)).toThrow('Unsupported operation');
+  test('modulo 10 % 3 => 1', () => {
+    expect(compute('mod', 10, 3)).toBe(1);
+  });
+
+  test('modulo by zero throws', () => {
+    expect(() => compute('mod', 5, 0)).toThrow('Modulo by zero');
+  });
+
+  test('power 2 ^ 8 => 256', () => {
+    expect(compute('pow', 2, 8)).toBe(256);
+  });
+
+  test('power fractional exponent pow(9, 0.5) => 3', () => {
+    expect(compute('pow', 9, 0.5)).toBeCloseTo(3);
+  });
+
+  test('sqrt 16 => 4', () => {
+    expect(compute('sqrt', 16)).toBe(4);
+  });
+
+  test('sqrt 2 is close to Math.sqrt(2)', () => {
+    expect(compute('sqrt', 2)).toBeCloseTo(Math.sqrt(2));
+  });
+
+  test('sqrt negative throws an error', () => {
+    expect(() => compute('sqrt', -1)).toThrow('Square root of negative number');
   });
 
   test('toNumberOrError accepts numeric strings', () => {
