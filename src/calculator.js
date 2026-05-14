@@ -58,7 +58,7 @@ function isNumber(n) {
 function toNumberOrError(val, name) {
   const n = Number(val);
   if (!Number.isFinite(n)) {
-    errorExit(`Invalid number for ${name}: ${val}`);
+    throw new Error(`Invalid number for ${name}: ${val}`);
   }
   return n;
 }
@@ -73,11 +73,11 @@ function compute(op, a, b) {
       return a * b;
     case 'divide':
       if (b === 0) {
-        errorExit('Error: Division by zero', 2);
+        throw new Error('Division by zero');
       }
       return a / b;
     default:
-      errorExit(`Unsupported operation: ${op}`);
+      throw new Error(`Unsupported operation: ${op}`);
   }
 }
 
@@ -116,21 +116,35 @@ function main() {
     errorExit('Two operands are required. Example: node src/calculator.js add 2 3');
   }
 
-  const a = toNumberOrError(aRaw, 'a');
-  const b = toNumberOrError(bRaw, 'b');
+  try {
+    let a = toNumberOrError(aRaw, 'a');
+    let b = toNumberOrError(bRaw, 'b');
 
-  const validOps = ['add', 'subtract', 'multiply', 'divide'];
-  if (!validOps.includes(op)) {
-    // allow short symbols as convenience
-    if (op === '+') op = 'add';
-    else if (op === '-') op = 'subtract';
-    else if (op === '*' || op === 'x' || op === 'X') op = 'multiply';
-    else if (op === '/' || op === '÷') op = 'divide';
+    const validOps = ['add', 'subtract', 'multiply', 'divide'];
+    if (!validOps.includes(op)) {
+      // allow short symbols as convenience
+      if (op === '+') op = 'add';
+      else if (op === '-') op = 'subtract';
+      else if (op === '*' || op === 'x' || op === 'X') op = 'multiply';
+      else if (op === '/' || op === '÷') op = 'divide';
+    }
+
+    const result = compute(op, a, b);
+    // Print result to stdout
+    console.log(result);
+  } catch (err) {
+    // Map known errors to non-zero exit codes
+    if (err && err.message && err.message.toLowerCase().includes('division by zero')) {
+      errorExit('Error: Division by zero', 2);
+    }
+    errorExit(err.message || String(err), 1);
   }
-
-  const result = compute(op, a, b);
-  // Print result to stdout
-  console.log(result);
 }
 
-main();
+// Export functions for unit testing
+module.exports = { compute, toNumberOrError };
+
+// Only run main when executed directly
+if (require.main === module) {
+  main();
+}
