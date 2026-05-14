@@ -61,3 +61,11 @@ describe('Calculator basic operations', () => {
     expect(compute('add', -1.5, 2.25)).toBeCloseTo(0.75);
   });
 });
+
+test('modulo 5 % 2 => 1', () => {
+  expect(compute('mod', 5, 2)).toBe(1);
+});
+
+test('power 2 ^ 3 => 8', () => {
+  expect(compute('pow', 2, 3)).toBe(8);
+});
